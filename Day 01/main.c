@@ -60,7 +60,7 @@ int countIncreasesSlidingWindow(char filename[], int size){
                    prevSum = currSum;
                    fscanf(fp, "%d", sw+size-1);
               }
-              free(ws);
+              free(sw);
          }else{
               printf("Could not open the file");
               increases = -1;
