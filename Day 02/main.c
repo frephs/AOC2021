@@ -40,6 +40,7 @@ int getFinalPosition(char filename[]){
           printf("Could not open the input file");
           x_pos = y_depth = 0;
      }
+     fclose(fp);
      return x_pos*y_depth;
 }
 
@@ -64,6 +65,7 @@ int getCorrectFinalPosition(char filename[]){
                }
                fscanf(fp, "%s %d", direction, &n);
           }
+          fclose(fp);
      }else{
           printf("Could not open the input file");
           x_pos = y_depth = 0;

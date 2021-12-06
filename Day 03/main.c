@@ -143,6 +143,7 @@ input_bin_t *loadData(char filename[], input_bin_t *h){
                data = pushBin(data, bin);
                fscanf(fp, "%s", bin);
           }
+          fclose(fp);
      }else{
           printf("Could not open the file\n");
      }
@@ -171,7 +172,7 @@ input_bin_t *pushBin(input_bin_t *h, char bin[]){
 
 int binToDec(int bin[], int dim){
      int i, pow, dec;
-     for(i=MAXBIN-1, pow=1, dec=0; i>=0; i--, pow *=2){
+     for(i=MAXBIN-1, pow=1, dec=0; i>=0; i--, pow *=BASE){
           dec += bin[i]*pow;
      }
      return dec;
