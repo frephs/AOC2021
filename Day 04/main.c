@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+
 #define FN "input.txt"
 #define MAXCHAREXT 289
 #define NROWS 5
 #define NCOLS 5
 
-#define FN "input.txt"
 
 typedef struct bingo_{
      int card[NROWS][NCOLS];
