@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #define FN "input.txt"
-#define MAXCHAREXT 291
+#define MAXCHAREXT 289
 #define NROWS 5
 #define NCOLS 5
 
