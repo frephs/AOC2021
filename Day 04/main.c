@@ -64,16 +64,13 @@ int main(){
 
      for(currExt = hExt, allWon =0 ; currExt && !allWon; currExt= currExt->next){
           extractNumbers(currExt, secondCheck, NROWS, NCOLS);
-          //printf("\n\nEstratto %d: \n\n", currExt->ext);
           allWon = checkLastWinning(currExt, secondCheck, NROWS, NCOLS);
-          //printBingoCards(secondCheck, NROWS, NCOLS);
           if(allWon){
                for(currCard = secondCheck, minWin= currCard; currCard; currCard = currCard->next){
                     if(currCard->won<=minWin->won){
                          minWin = currCard;
                     }
                }
-               printBingoCards(secondCheck, NROWS,NCOLS);
                score = calcScore(minWin,currExt, NROWS,NCOLS);
           }
      }
@@ -276,7 +273,6 @@ int calcScore(bingo_t *curr, extractions_t *ext, int nrows, int ncols){
                score += curr->card[i][j];
           }
      }
-     printf("Score1: %d*%d\n", score, ext->ext);
      score *= ext->ext;
      return score;
 }
