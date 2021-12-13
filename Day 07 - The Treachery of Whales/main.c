@@ -12,7 +12,7 @@ typedef struct pos_{
 pos_t  *getInitialPositions(char filename[]);
 int getTotalFuelForPosition(pos_t *crabs, int h, int linear);
 int getNonLinearFuel(int distance);
-
+int getMinimalFuel(pos_t *crabs, int linear);
 
 int main(){
      pos_t *crabs;
@@ -22,7 +22,7 @@ int main(){
      minFuel = getMinimalFuel(crabs,1);
      printf("MinFuel with Linear consumption: %d\n", minFuel);
 
-     minFuel = getMinimalFuel(crabs,1);
+     minFuel = getMinimalFuel(crabs,0);
      printf("MinFuel with NonLinear consumption: %d\n", minFuel);
 
 }
@@ -37,6 +37,7 @@ int getMinimalFuel(pos_t *crabs, int linear){
           if(fuelAtCurrCrab<minFuel)
                minFuel = fuelAtCurrCrab;
      }
+     return minFuel;
 }
 
 int getTotalFuelForPosition(pos_t *crabs, int h, int linear){
