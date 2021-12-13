@@ -15,26 +15,48 @@ int getNonLinearFuel(int distance);
 
 
 int main(){
-     pos_t *crabs, *curr;
-     int fuelAtCurrCrab, minFuel;
+     pos_t *crabs;
+     int minFuel;
      crabs = getInitialPositions(FN);
-     minFuel = getTotalFuelForPosition(crabs, crabs->h,1);
-     for(curr=crabs->next; curr;curr=curr->next){
-          fuelAtCurrCrab = getTotalFuelForPosition(crabs, curr->h, 1);
-          if(fuelAtCurrCrab<minFuel)
-               minFuel = fuelAtCurrCrab;
-     }
-     printf("\nMinFuel with Linear consumption: %d", minFuel);
-     minFuel = getTotalFuelForPosition(crabs, crabs->h,0);
+
+     minFuel = getMinimalFuel(crabs,1);
+     printf("MinFuel with Linear consumption: %d\n", minFuel);
+
+     minFuel = getMinimalFuel(crabs,1);
+     printf("MinFuel with NonLinear consumption: %d\n", minFuel);
+
+}
+
+
+int getMinimalFuel(pos_t *crabs, int linear){
+     pos_t *curr;
+     int fuelAtCurrCrab, minFuel;
+     minFuel = getTotalFuelForPosition(crabs, crabs->h, linear);
      for(curr=crabs->next; curr;curr=curr->next){
           fuelAtCurrCrab = getTotalFuelForPosition(crabs, curr->h, 0);
           if(fuelAtCurrCrab<minFuel)
                minFuel = fuelAtCurrCrab;
      }
-     printf("\nMinFuel with NonLinear consumption: %d", minFuel);
-
 }
 
+int getTotalFuelForPosition(pos_t *crabs, int h, int linear){
+     int totFuel;
+     for(totFuel = 0;crabs; crabs = crabs->next){
+          if(linear)
+               totFuel += abs(crabs->h - h);
+          else{
+               totFuel += getNonLinearFuel(abs(crabs->h - h -1));
+          }
+     }
+     return totFuel;
+}
+
+int getNonLinearFuel(int distance){
+     int step, fuel;
+     for(step = 1, fuel =0; distance; step++, distance--)
+     fuel += step;
+     return fuel;
+}
 
 pos_t  *getInitialPositions(char filename[]){
      pos_t *crabs, *tmp;
@@ -72,23 +94,4 @@ pos_t  *getInitialPositions(char filename[]){
           printf("Could not open the file");
      }
      return crabs;
-}
-
-int getTotalFuelForPosition(pos_t *crabs, int h, int linear){
-     int totFuel;
-     for(totFuel = 0;crabs; crabs = crabs->next){
-          if(linear)
-               totFuel += abs(crabs->h - h);
-          else{
-               totFuel += getNonLinearFuel(abs(crabs->h - h -1));
-          }
-     }
-     return totFuel;
-}
-
-int getNonLinearFuel(int distance){
-     int step, fuel;
-     for(step = 1, fuel =0; distance; step++, distance--)
-          fuel += step;
-     return fuel;
 }
