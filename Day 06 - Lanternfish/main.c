@@ -64,7 +64,7 @@ void printCurrentLanternFish(lanternfish_t *lfs, int days, int currDay){
      for(i=0;i<days;i++){
           printf("%9d ", lfs->numberAtDay[i]);
      }*/
-     printf("\nTotal:    %ld", lfs->totFish);
+     printf("Total:    %ld", lfs->totFish);
      printf("\n");
 }
 
