@@ -27,6 +27,8 @@ lowPoints_t * findLowPoints(int points[SIZEY][SIZEX], int sizeY, int sizeX);
 int basinSize(int points[SIZEY][SIZEX], int alreadyChecked[SIZEY][SIZEX],  int precPoint, int y, int x, int sizeY, int sizeX);
 basins_t * insertBasinsInOrder(basins_t *b, int size);
 
+//i should cleanup the memory ik
+
 int main(){
      int points[SIZEY][SIZEX], alreadyChecked[SIZEY][SIZEX];
      int riskLowPoints, topBasins, i;
