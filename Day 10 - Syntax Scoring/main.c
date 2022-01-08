@@ -12,47 +12,61 @@ typedef struct chunks_{
      struct chunks_ *next;
 }chunks_t;
 
+typedef struct exp_scores_{
+     long int score;
+     struct exp_scores_ *next;
+}exp_scores_t;
+
 typedef struct lines_{
      char line[MAXS+1];
      struct lines_ *next;
      chunks_t *chunk;
      int scoreIllegalChunk;
 }lines_t;
-;
-int matches(char a, char b);
+
+
+int matches(chunks_t *a, chunks_t *b);
 void printLines(lines_t *h);
 lines_t *getLines(char filename[]);
-int scoreIllegalChunk(char c);
+int scoreCorruptedChunk(char c);
+long int scoreIncompleteChunk(char c);
 chunks_t * strToChunk(char str[]);
-int corruptedChunk(chunks_t *h, chunks_t *prec);
-int isOpening(char c);
+chunks_t *illegalChunk(chunks_t *h, chunks_t *prec, int incomplete);
+int isOpening(chunks_t *c);
+exp_scores_t * insertExpectedScoresInOrder(exp_scores_t *e, long int score);
+void printExpectedScores(exp_scores_t *exp);
 
 
 int main(){
-     int n, i;
+     int scoreCorrupted, i,j;
+     long int scoreIncomplete;
      lines_t *h, *curr, *tmp;
-     h = NULL;
-     h = getLines(FN);
-     //printf("%d %d %d %d", '['-']', '{'-'[', '('-')', '<'-'>');
-     //printLines(h);
-     for(curr=h, i=0;curr;curr=curr->next, i++){
-          n = corruptedChunk(curr->chunk, curr->chunk);
-          printf("Line %d: Score chunk: %d\n",i , n);
+     exp_scores_t *exps;
+     chunks_t *curr2, *tmp2;
+
+     exps = NULL;
+     h = NULL; h = getLines(FN);
+
+     for(curr=h, i=0, scoreCorrupted=0;curr;curr=curr->next){
+          tmp2 = illegalChunk(curr->chunk, curr->chunk, 0);
+          if(tmp2){
+               scoreCorrupted += scoreCorruptedChunk(tmp2->c);
+          }
+          curr2= illegalChunk(curr->chunk, curr->chunk, 1);
+          //printExpected(curr2);
+          for(scoreIncomplete=0; curr2; curr2=curr2->next){
+               scoreIncomplete = scoreIncomplete*5 + scoreIncompleteChunk(curr2->c);
+          }
+          //printf("Score incomplete: %ld\n",scoreIncomplete);
+          if(scoreIncomplete){
+               exps = insertExpectedScoresInOrder(exps, scoreIncomplete);
+               i++;
+          }
      }
-}
 
-
-int matches(char a, char b){
-     return    (a=='{' && b== '}') ||
-               (a=='[' && b== ']') ||
-               (a=='(' && b== ')') ||
-               (a=='<' && b== '>');
-}
-
-void printLines(lines_t *h){
-     for(h;h;h=h->next){
-          printf("%s\n", h->line);
-     }
+     printf("Score chunk total %d: %d\n",j, scoreCorrupted);
+     for(exps, j=0; j<i/2 && exps; exps=exps->next, j++);
+     printf("Middle score for autocompletation: %ld\n", exps->score);
 }
 
 lines_t *getLines(char filename[]){
@@ -83,20 +97,6 @@ lines_t *getLines(char filename[]){
      return h;
 }
 
-
-int scoreIllegalChunk(char c){
-     int n;
-     n=0;
-     switch(c){
-          case ')': n = 3; break;
-          case ']': n = 57; break;
-          case '}': n = 1197; break;
-          case '>': n = 25137; break;
-     }
-     return n;
-}
-
-
 chunks_t * strToChunk(char str[]){
      chunks_t *h,*tmp,*prec;
      int i;
@@ -121,29 +121,128 @@ chunks_t * strToChunk(char str[]){
      return h;
 }
 
+int matches(chunks_t *a, chunks_t *b){
+     return    (a->c=='{' && b->c== '}') ||
+     (a->c=='[' && b->c== ']') ||
+     (a->c=='(' && b->c== ')') ||
+     (a->c=='<' && b->c== '>');
+}
 
-int corruptedChunk(chunks_t *h, chunks_t *prec){
+char returnMatchingChar(chunks_t *a){
+     if (a->c=='{')
+     return  '}';
+     if (a->c=='[')
+     return  ']';
+     if (a->c=='(')
+     return  ')';
+     if (a->c=='<')
+     return  '>';
+}
+
+int scoreCorruptedChunk(char c){
      int n;
-     if(h && isOpening(h->c) && h->next && isOpening(h->next->c)){
-          printf("Next! %c %c\n", h->c, h->next->c);
-          n = corruptedChunk(h->next, h);
-          if(!n )
-          printf("Now confronting %c %c\n", h->c, h->next->c);
+     n=0;
+     switch(c){
+          case ')': n = 3; break;
+          case ']': n = 57; break;
+          case '}': n = 1197; break;
+          case '>': n = 25137; break;
      }
-
-     if(h && h->next && matches(h->c, h->next->c)){
-          //free memory
-          prec->next = h->next->next;
-          printf("heyo closing brackets %c %c\n", h->c, h->next->c);
-          return 0;
-}
-     if(h && h->next && isOpening(h->c) && !isOpening(h->next->c)  && !matches(h->c, h->next->c)){
-          printf("Oh no %c %c\n", h->c, h->next->c);
-          n = scoreIllegalChunk(h->next->c);
-          return n;
-     }
+     return n;
 }
 
-int isOpening(char c){
-     return c=='(' || c== '{' || c=='<' || c=='[';
+long int scoreIncompleteChunk(char c){
+     int n;
+     n=0;
+     switch(c){
+          case ')': n = 1; break;
+          case ']': n = 2; break;
+          case '}': n = 3; break;
+          case '>': n = 4; break;
+     }
+     return n;
+}
+
+void printLines(lines_t *h){
+     for(h;h;h=h->next){
+          printf("%s\n", h->line);
+     }
+}
+
+int isOpening(chunks_t *c){
+     return c->c=='(' || c->c== '{' || c->c=='<' || c->c=='[';
+}
+
+chunks_t * expected (chunks_t *expected, chunks_t *a){
+     chunks_t *tmp;
+     tmp = malloc(sizeof(chunks_t));
+     if(tmp){
+          tmp->c = returnMatchingChar(a);
+          tmp->next = expected;
+          expected = tmp;
+     }else{
+          printf("trouble allocating memory");
+     }
+     return expected;
+}
+
+void printExpected(chunks_t *exp){
+     printf("Expected: ");
+     for(exp;exp;exp=exp->next)
+     printf("%c ", exp->c);
+     printf("\n");
+
+}
+
+void printExpectedScores(exp_scores_t *exp){
+     for(exp;exp;exp=exp->next)
+     printf("%ld ", exp->score);
+     printf("\n");
+
+}
+
+chunks_t *illegalChunk(chunks_t *h, chunks_t *prec, int incomplete){
+     chunks_t *exp;
+     exp = NULL;
+     int ok;
+     ok = 1;
+     do{
+          if(h && !isOpening(h)){
+               ok = h->c == exp->c;
+               //printf("Closing: %c, ", h->c);printExpected(exp);
+               if(ok){
+                    exp = exp->next;
+               }
+          }else if(h){
+               exp = expected(exp, h);
+               //printf("Adding: %c, ", h->c);printExpected(exp);
+          }
+          prec = h;
+          h= h->next;
+     }while(h && ok);
+     if(!ok && !incomplete)
+     return(prec);
+     if(ok && incomplete)
+     return exp;
+     return 0;
+}
+
+exp_scores_t * insertExpectedScoresInOrder(exp_scores_t *e, long int score){
+     exp_scores_t *tmp, *prec, *curr;
+     tmp = malloc(sizeof(exp_scores_t));
+     tmp->score = score;
+     if(tmp){
+          tmp->score = score;
+          tmp->next = NULL;
+          if(e && score < e->score){
+               for(prec = e, curr = e->next; curr && score < curr->score;curr = curr->next, prec = prec->next);
+               tmp->next = curr;
+               prec->next = tmp;
+          } else {
+               /*caso e vuota o il primo elemento è maggiore del nuovo*/
+               tmp->next = e;
+               e = tmp;
+          }
+     }
+     return e;
 }
