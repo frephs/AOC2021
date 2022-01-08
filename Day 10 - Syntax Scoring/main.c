@@ -18,8 +18,8 @@ typedef struct exp_scores_{
 }exp_scores_t;
 
 typedef struct lines_{
-     char line[MAXS+1];
      struct lines_ *next;
+     char line[MAXS+1];
      chunks_t *chunk;
      int scoreIllegalChunk;
 }lines_t;
@@ -121,6 +121,10 @@ chunks_t * strToChunk(char str[]){
      return h;
 }
 
+int isOpening(chunks_t *c){
+     return c->c=='(' || c->c== '{' || c->c=='<' || c->c=='[';
+}
+
 int matches(chunks_t *a, chunks_t *b){
      return    (a->c=='{' && b->c== '}') ||
      (a->c=='[' && b->c== ']') ||
@@ -137,68 +141,6 @@ char returnMatchingChar(chunks_t *a){
      return  ')';
      if (a->c=='<')
      return  '>';
-}
-
-int scoreCorruptedChunk(char c){
-     int n;
-     n=0;
-     switch(c){
-          case ')': n = 3; break;
-          case ']': n = 57; break;
-          case '}': n = 1197; break;
-          case '>': n = 25137; break;
-     }
-     return n;
-}
-
-long int scoreIncompleteChunk(char c){
-     int n;
-     n=0;
-     switch(c){
-          case ')': n = 1; break;
-          case ']': n = 2; break;
-          case '}': n = 3; break;
-          case '>': n = 4; break;
-     }
-     return n;
-}
-
-void printLines(lines_t *h){
-     for(h;h;h=h->next){
-          printf("%s\n", h->line);
-     }
-}
-
-int isOpening(chunks_t *c){
-     return c->c=='(' || c->c== '{' || c->c=='<' || c->c=='[';
-}
-
-chunks_t * expected (chunks_t *expected, chunks_t *a){
-     chunks_t *tmp;
-     tmp = malloc(sizeof(chunks_t));
-     if(tmp){
-          tmp->c = returnMatchingChar(a);
-          tmp->next = expected;
-          expected = tmp;
-     }else{
-          printf("trouble allocating memory");
-     }
-     return expected;
-}
-
-void printExpected(chunks_t *exp){
-     printf("Expected: ");
-     for(exp;exp;exp=exp->next)
-     printf("%c ", exp->c);
-     printf("\n");
-
-}
-
-void printExpectedScores(exp_scores_t *exp){
-     for(exp;exp;exp=exp->next)
-     printf("%ld ", exp->score);
-     printf("\n");
-
 }
 
 chunks_t *illegalChunk(chunks_t *h, chunks_t *prec, int incomplete){
@@ -227,6 +169,43 @@ chunks_t *illegalChunk(chunks_t *h, chunks_t *prec, int incomplete){
      return 0;
 }
 
+int scoreCorruptedChunk(char c){
+     int n;
+     n=0;
+     switch(c){
+          case ')': n = 3; break;
+          case ']': n = 57; break;
+          case '}': n = 1197; break;
+          case '>': n = 25137; break;
+     }
+     return n;
+}
+
+long int scoreIncompleteChunk(char c){
+     int n;
+     n=0;
+     switch(c){
+          case ')': n = 1; break;
+          case ']': n = 2; break;
+          case '}': n = 3; break;
+          case '>': n = 4; break;
+     }
+     return n;
+}
+
+chunks_t * expected (chunks_t *expected, chunks_t *a){
+     chunks_t *tmp;
+     tmp = malloc(sizeof(chunks_t));
+     if(tmp){
+          tmp->c = returnMatchingChar(a);
+          tmp->next = expected;
+          expected = tmp;
+     }else{
+          printf("trouble allocating memory");
+     }
+     return expected;
+}
+
 exp_scores_t * insertExpectedScoresInOrder(exp_scores_t *e, long int score){
      exp_scores_t *tmp, *prec, *curr;
      tmp = malloc(sizeof(exp_scores_t));
@@ -245,4 +224,25 @@ exp_scores_t * insertExpectedScoresInOrder(exp_scores_t *e, long int score){
           }
      }
      return e;
+}
+
+void printExpected(chunks_t *exp){
+     printf("Expected: ");
+     for(exp;exp;exp=exp->next)
+     printf("%c ", exp->c);
+     printf("\n");
+
+}
+
+void printExpectedScores(exp_scores_t *exp){
+     for(exp;exp;exp=exp->next)
+     printf("%ld ", exp->score);
+     printf("\n");
+
+}
+
+void printLines(lines_t *h){
+     for(h;h;h=h->next){
+          printf("%s\n", h->line);
+     }
 }
